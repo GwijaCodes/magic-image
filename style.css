@@ -1,0 +1,23 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color:rgb(103, 103, 103);
+  display: flex;
+  justify-content: center;
+}
+
+canvas {
+  display: block;
+}
+
+button {
+  background-color: black;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+}
+
+button:hover{
+  cursor: pointer;
+  background-color:rgb(74, 73, 73);
+}
