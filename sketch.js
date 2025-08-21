@@ -1,18 +1,17 @@
 let img;
 let panel;
-let input, gridInputBtn, button;
+let inputRes, refreshBtn, saveBtn;
 let newImageWasDropped = false;
 let gridSize = 60;
-const margin = 0;
+let contrast = 0.5;    // neutro a metà slider
+let brightness = 0.5;  // neutro a metà slider
 let grayLevels = [];
 let grayImgs = [];
-const date = new Date();
 
 function preload() {
   if (!newImageWasDropped) {
     img = loadImage("gatto2.jpg");
   }
-
   for (let i = 1; i <= 5; i++) {
     grayImgs.push(loadImage(i + ".jpg"));
   }
@@ -20,33 +19,49 @@ function preload() {
 
 function setup() {
   resizeCanvasToImage(img);
-
   const canvas = createCanvas(img.width, img.height);
   canvas.drop(gotFile);
 
   panel = createDiv();
   panel.id('panel');
 
-  button = createButton('Salva immagine');
-  button.parent(panel);
-  button.mousePressed(() => {
-    const date = new Date();
+  // Pulsante "Salva immagine"
+  saveBtn = createButton('Salva immagine');
+  saveBtn.parent(panel);
+  saveBtn.mousePressed(() => {
+    const d = new Date();
     saveCanvas(
-      `magic-image-${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`,
+      `magic-image-${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}`,
       'jpg'
     );
   });
 
-  input = createInput(gridSize);
-  input.id('resolution-input')
-  input.parent(panel);
+  // Controllo risoluzione
+  createSpan('Risoluzione').parent(panel);
+  inputRes = createInput(gridSize);
+  inputRes.attribute('type', 'number');
+  inputRes.attribute('min', '10');
+  inputRes.attribute('max', '200');
+  inputRes.parent(panel);
 
-  // Pulsante aggiorna griglia
-  gridInputBtn = createButton('Cambia risoluzione');
-  gridInputBtn.parent(panel);
-  gridInputBtn.mousePressed(() => {
-    gridSize = int(input.value());
-    redraw(); // ridisegna senza ricaricare l'immagine
+  // Slider per contrasto (0 = basso, 1 = alto, 0.5 = neutro)
+  createSpan('Contrasto').parent(panel);
+  const contrastSlider = createSlider(0, 1, contrast, 0.01);
+  contrastSlider.parent(panel);
+
+  // Slider per luminosità (0 = scuro, 1 = chiaro, 0.5 = neutro)
+  createSpan('Luminosità').parent(panel);
+  const brightnessSlider = createSlider(0, 1, brightness, 0.01);
+  brightnessSlider.parent(panel);
+
+  // Pulsante "Refresh" per applicare le modifiche
+  refreshBtn = createButton('Refresh');
+  refreshBtn.parent(panel);
+  refreshBtn.mousePressed(() => {
+    gridSize = int(inputRes.value());
+    contrast = contrastSlider.value();
+    brightness = brightnessSlider.value();
+    redraw();
   });
 
   noLoop();
@@ -56,25 +71,24 @@ function setup() {
 function draw() {
   background(255);
 
-  // Calcola le dimensioni di ogni cella
-  const cellW = height / gridSize;
+  const cellW = width / gridSize;
   const cellH = height / gridSize;
 
-  // Crea una copia ridimensionata dell'immagine alla griglia
   let tempImg = img.get();
   tempImg.resize(gridSize, gridSize);
   tempImg.filter(GRAY);
-  tempImg.loadPixels();
+
+  applyContrast(tempImg, contrast);
+  applyBrightness(tempImg, brightness);
 
   getGrayLevels();
 
   for (let y = 0; y < gridSize; y++) {
     for (let x = 0; x < gridSize; x++) {
-      let idx = (y * gridSize + x) * 4;
-      let lum = tempImg.pixels[idx]; // valore grigio
-      let imgIndex = getClosestGrayIndex(lum);
+      const idx = (y * gridSize + x) * 4;
+      const lum = tempImg.pixels[idx];
+      const imgIndex = getClosestGrayIndex(lum);
 
-      // Disegna l'immagine corrispondente alla cella
       image(
         grayImgs[imgIndex],
         x * cellW,
@@ -88,39 +102,28 @@ function draw() {
 
 function getGrayLevels() {
   grayLevels = [];
-  let min = 50;
-  let max = 240;
-  let n = grayImgs.length;
-
+  const min = 50, max = 240;
+  const n = grayImgs.length;
   for (let i = 0; i < n; i++) {
-    let t = i / (n - 1);
-    let mapped = min + (max - min) * t;
-    grayLevels.push(Math.round(mapped));
+    const t = i / (n - 1);
+    grayLevels.push(Math.round(min + (max - min) * t));
   }
 }
 
 function getClosestGrayIndex(value) {
-  let closestIndex = 0;
-  let minDist = Infinity;
-
-  for (let i = 0; i < grayLevels.length; i++) {
-    let d = Math.abs(value - grayLevels[i]);
-    if (d < minDist) {
-      minDist = d;
-      closestIndex = i;
-    }
-  }
-  return closestIndex;
+  return grayLevels
+    .map((g, i) => ({ dist: abs(value - g), index: i }))
+    .reduce((prev, curr) => curr.dist < prev.dist ? curr : prev)
+    .index;
 }
 
 function gotFile(file) {
   if (file.type === 'image') {
     newImageWasDropped = true;
-
     loadImage(file.data, loaded => {
       img = loaded;
-      resizeCanvasToImage(img); // Ridimensiona la canvas **dopo** aver caricato la nuova immagine
-      redraw(); // Ridisegna la scena con le nuove dimensioni
+      resizeCanvasToImage(img);
+      redraw();
     });
   } else {
     console.log('Not an image file!');
@@ -130,19 +133,43 @@ function gotFile(file) {
 function resizeCanvasToImage(image) {
   const windowRatio = windowWidth / windowHeight;
   const imgRatio = image.width / image.height;
-
   let newWidth, newHeight;
 
   if (imgRatio > windowRatio) {
-    // Immagine più larga rispetto alla finestra
     newWidth = windowWidth;
     newHeight = windowWidth / imgRatio;
   } else {
-    // Immagine più alta rispetto alla finestra
     newHeight = windowHeight;
     newWidth = windowHeight * imgRatio;
   }
-
   resizeCanvas(newWidth, newHeight);
 }
 
+// Applica contrasto (range 0–1 con 0.5 neutro)
+function applyContrast(pImg, c) {
+  pImg.loadPixels();
+  const mappedC = (c - 0.5) * 2; // porta in -1..+1
+  const factor = (259 * (mappedC * 255 + 255)) /
+    (255 * (259 - mappedC * 255));
+
+  for (let i = 0; i < pImg.pixels.length; i += 4) {
+    let v = pImg.pixels[i];
+    v = factor * (v - 128) + 128;
+    v = constrain(v, 0, 255);
+    pImg.pixels[i] = pImg.pixels[i + 1] = pImg.pixels[i + 2] = v;
+  }
+  pImg.updatePixels();
+}
+
+// Applica luminosità (0–1 con 0.5 neutro)
+function applyBrightness(pImg, b) {
+  pImg.loadPixels();
+  const offset = (b - 0.5) * 2 * 255;
+
+  for (let i = 0; i < pImg.pixels.length; i += 4) {
+    let v = pImg.pixels[i] + offset;
+    v = constrain(v, 0, 255);
+    pImg.pixels[i] = pImg.pixels[i + 1] = pImg.pixels[i + 2] = v;
+  }
+  pImg.updatePixels();
+}
