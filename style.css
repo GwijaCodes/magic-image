@@ -1,27 +1,54 @@
 html, body {
   margin: 0;
   padding: 0;
-  background-color:rgb(103, 103, 103);
+  background-color:rgb(223, 178, 31);
   display: flex;
   justify-content: center;
 }
 
 canvas {
   display: block;
+  box-shadow: 2px 2px 0 0 #000;
+}
+
+#panel {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 150px;
+  background:rgb(112, 107, 107);
+  box-shadow: 2px 2px 0 0 #000;
+  border: 2px solid black;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#resolution-input{
+  margin-top: 16px;
+  height: 26px;
+  max-width: 100%;
+  box-shadow: inset 2px 2px 0 0 #fff, 2px 2px 0 0rgb(142, 140, 140);
+  background:rgb(181, 176, 176);
+  outline: none;
 }
 
 button {
-  background-color: black;
-  color: white;
+  background:rgb(181, 176, 176);
+  box-shadow: inset 2px 2px 0 0 #fff, 2px 2px 0 0 #000;
   border: none;
+  color: black;
   padding: 10px 20px;
-}
-
-input[type=text]{
-  padding: 10px 15px;
+  width: 100%;
 }
 
 button:hover{
+  background:rgb(208, 205, 205);
   cursor: pointer;
-  background-color:rgb(74, 73, 73);
+}
+
+button:active{
+  cursor: pointer;
+  box-shadow: inset 4px 4px 0 0 #000;
 }

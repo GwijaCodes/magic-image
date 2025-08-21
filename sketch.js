@@ -1,11 +1,11 @@
 let img;
-let input;
+let panel;
+let input, gridInputBtn, button;
 let newImageWasDropped = false;
 let gridSize = 60;
 const margin = 0;
 let grayLevels = [];
 let grayImgs = [];
-let gridInputBtn;
 const date = new Date();
 
 function preload() {
@@ -24,8 +24,11 @@ function setup() {
   const canvas = createCanvas(img.width, img.height);
   canvas.drop(gotFile);
 
-  let button = createButton('Salva immagine');
-  button.position(10, 10);
+  panel = createDiv();
+  panel.id('panel');
+
+  button = createButton('Salva immagine');
+  button.parent(panel);
   button.mousePressed(() => {
     const date = new Date();
     saveCanvas(
@@ -35,12 +38,14 @@ function setup() {
   });
 
   input = createInput(gridSize);
-  input.position(10, 50);
+  input.id('resolution-input')
+  input.parent(panel);
 
-  gridInputBtn = createButton('Aggiorna griglia');
-  gridInputBtn.position(input.x + input.width + 10, 50);
+  // Pulsante aggiorna griglia
+  gridInputBtn = createButton('Cambia risoluzione');
+  gridInputBtn.parent(panel);
   gridInputBtn.mousePressed(() => {
-    gridSize = int(input.value()); // aggiorna il gridSize
+    gridSize = int(input.value());
     redraw(); // ridisegna senza ricaricare l'immagine
   });
 
