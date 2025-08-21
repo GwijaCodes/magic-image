@@ -57,7 +57,7 @@ function draw() {
   background(255);
 
   // Calcola le dimensioni di ogni cella
-  const cellW = width / gridSize;
+  const cellW = height / gridSize;
   const cellH = height / gridSize;
 
   // Crea una copia ridimensionata dell'immagine alla griglia
