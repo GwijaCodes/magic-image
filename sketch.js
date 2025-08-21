@@ -1,9 +1,11 @@
 let img;
+let input;
 let newImageWasDropped = false;
-const gridSize = 180;
+let gridSize = 60;
 const margin = 0;
 let grayLevels = [];
 let grayImgs = [];
+let gridInputBtn;
 const date = new Date();
 
 function preload() {
@@ -30,6 +32,16 @@ function setup() {
       `magic-image-${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`,
       'jpg'
     );
+  });
+
+  input = createInput(gridSize);
+  input.position(10, 50);
+
+  gridInputBtn = createButton('Aggiorna griglia');
+  gridInputBtn.position(input.x + input.width + 10, 50);
+  gridInputBtn.mousePressed(() => {
+    gridSize = int(input.value()); // aggiorna il gridSize
+    redraw(); // ridisegna senza ricaricare l'immagine
   });
 
   noLoop();

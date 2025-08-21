@@ -17,6 +17,10 @@ button {
   padding: 10px 20px;
 }
 
+input[type=text]{
+  padding: 10px 15px;
+}
+
 button:hover{
   cursor: pointer;
   background-color:rgb(74, 73, 73);
