@@ -1,6 +1,6 @@
 let img;
 let newImageWasDropped = false;
-const gridSize = 60;
+const gridSize = 180;
 const margin = 0;
 let grayLevels = [];
 let grayImgs = [];
@@ -8,7 +8,7 @@ const date = new Date();
 
 function preload() {
   if (!newImageWasDropped) {
-    img = loadImage("gatto.jpg");
+    img = loadImage("gatto2.jpg");
   }
 
   for (let i = 1; i <= 5; i++) {
